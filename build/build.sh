@@ -1,0 +1,1 @@
+ gcc parson.c -shared -o Json.so -O2 -Wall -Wextra -std=c89 -pedantic-errors -DTESTS_MAIN 

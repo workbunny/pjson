@@ -48,6 +48,27 @@ struct json_array_t
     size_t capacity;
 };
 
+// 解析json字符串，返回json_val结构体
 JSON_Value *json_parse_string(const char *string);
+// json_val结构体转json_obj结构体
 JSON_Object *json_value_get_object(const JSON_Value *value);
+
+// json_obj结构体操作----------------
+
+// 获取json_obj结构体中的json_val结构体
+JSON_Value *json_object_get_value(const JSON_Object *object, const char *name);
+
+// 获取json_obj结构体中的字符串
 const char *json_object_get_string(const JSON_Object *object, const char *name);
+
+/* 获取对象中指定名称的子对象 */
+JSON_Object *json_object_get_object(const JSON_Object *object, const char *name);
+
+/* 获取对象中指定名称的数组 */
+JSON_Array *json_object_get_array(const JSON_Object *object, const char *name);
+
+/* 获取对象中指定名称的数字值，失败时返回 0 */
+double json_object_get_number(const JSON_Object *object, const char *name);
+
+/* 获取对象中指定名称的布尔值，失败时返回 -1 */
+int json_object_get_boolean(const JSON_Object *object, const char *name);
