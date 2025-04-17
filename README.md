@@ -53,3 +53,13 @@ var_dump($type);
 当前内存占用: 572.92KB
 执行耗时: 0.0137 秒
 ```
+
+## 编译json动态库
+
+编译适合自己系统的动态库
+
+`build` 文件夹
+
+```bash
+gcc parson.c -shared -o Json.so -O2 -Wall -Wextra -std=c89 -pedantic-errors -DTESTS_MAIN 
+```
