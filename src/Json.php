@@ -5,140 +5,63 @@ declare(strict_types=1);
 
 namespace Workbunny\PJson;
 
-class Json
+class Json extends Base
 {
-
-    private \FFI $ffi;
-
-    public function __construct()
-    {
-        $header_content = file_get_contents(__DIR__ . '/Json.h');
-        $this->ffi = \FFI::cdef($header_content, $this->getLibFile());
-    }
-
     /**
-     * 获取动态库文件
+     *  解析json字符串
      *
-     * @return string 动态库文件路径
+     * @param string $json json字符串
+     * @return \FFI\CData json_val json对象或者json数组
+     * @throws \Exception 解析失败
      */
-    private function getLibFile(): string
+    public static function decode(string $json): \FFI\CData
     {
-        $suffix = ".dll";
-        // 判断系统
-        switch (PHP_OS) {
-            case 'Linux':
-                $suffix = ".so";
-                break;
-            case 'Darwin':
-                $suffix = ".dylib";
-                break;
-            default:
-                break;
-        }
-        return dirname(__DIR__)
-            . DIRECTORY_SEPARATOR . "lib"
-            . DIRECTORY_SEPARATOR . "Json" . $suffix;
-    }
-
-    /**
-     * 解析json字符串
-     *
-     * @param string $json
-     * @return \FFI\CData json_val
-     */
-    public function parse(string $json): \FFI\CData
-    {
-        $json = $this->ffi->json_parse_string($json);
-        if ($json === null) {
+        $json_val = self::ffi()->json_parse_string($json);
+        if ($json_val === null) {
             throw new \Exception('json parsing failed');
         }
-        return $json;
-    }
-
-    /**
-     * 将json_val转换为json_obj
-     *
-     * @param \FFI\CData $json_val json_val
-     * @return \FFI\CData json_obj
-     */
-    public function valToObj(\FFI\CData $json_val): \FFI\CData
-    {
-        return $this->ffi->json_value_get_object($json_val);
-    }
-
-    /**
-     * 获取json_obj的json_val
-     *
-     * @param \FFI\CData $json_obj json_obj
-     * @param string $key json_obj的key
-     * @return \FFI\CData json_val
-     */
-    public function objGetVal(\FFI\CData $json_obj, string $key): \FFI\CData
-    {
-        return $this->ffi->json_object_get_value($json_obj, $key);
-    }
-
-    /**
-     * 获取json_obj的字符串
-     *
-     * @param \FFI\CData $json_obj json_obj
-     * @param string $key json_obj的key
-     * @return string json_obj的字符串值
-     */
-    public function objGetStr(\FFI\CData $json_obj, string $key): string
-    {
-        return $this->ffi->json_object_get_string($json_obj, $key);
-    }
-
-    /**
-     * 获取json_obj的json_obj
-     *
-     * @param \FFI\CData $json_obj json_obj
-     * @param string $key json_obj的key
-     * @return \FFI\CData json_obj
-     */
-    public function objGetObj(\FFI\CData $json_obj, string $key): \FFI\CData
-    {
-        return $this->ffi->json_object_get_object($json_obj, $key);
-    }
-
-    /**
-     * 获取json_obj的json_arr
-     *
-     * @param \FFI\CData $json_obj json_obj
-     * @param string $key json_obj的key
-     * @return \FFI\CData json_arr
-     */
-    public function objGetArr(\FFI\CData $json_obj, string $key): \FFI\CData
-    {
-        return $this->ffi->json_object_get_array($json_obj, $key);
-    }
-
-    /**
-     * 获取json_obj的数字
-     *
-     * @param \FFI\CData $json_obj json_obj
-     * @param string $key json_obj的key
-     * @return float json_obj的数字值
-     */
-    public function objGetNum(\FFI\CData $json_obj, string $key): float
-    {
-        return $this->ffi->json_object_get_number($json_obj, $key);
-    }
-
-    /**
-     * 获取json_obj的布尔值
-     *
-     * @param \FFI\CData $json_obj json_obj
-     * @param string $key json_obj的key
-     * @return boolean json_obj的布尔值
-     */
-    public function objGetBool(\FFI\CData $json_obj, string $key): bool
-    {
-        $bool = $this->ffi->json_object_get_boolean($json_obj, $key);
-        if ($bool == -1) {
-            throw new \Exception('The value obtained is not of Boolean type.');
+        $type = self::ffi()->json_type($json_val);
+        if ($type === Type::obj->value) {
+            return self::ffi()->json_value_get_object($json_val);
+        } elseif ($type === Type::arr->value) {
+            return self::ffi()->json_value_get_array($json_val);
+        } else {
+            throw new \Exception('It must be a regular json object format or a json array format.');
         }
-        return $bool ? true : false;
+    }
+
+    /**
+     * 序列化json对象或者json数组为字符串
+     *
+     * @param \FFI\CData $json_val json对象或者json数组
+     * @return string json字符串
+     */
+    public static function encode(\FFI\CData $json_val): string
+    {
+        if ($json_val[0]->wrapping_value[0]->type === Type::obj->value) {
+            $val = self::ffi()->json_object_get_wrapping_value($json_val);
+            return self::ffi()->json_serialize_to_string_pretty($val);
+        } else {
+            $val = self::ffi()->json_array_get_wrapping_value($json_val);
+            return self::ffi()->json_serialize_to_string_pretty($val);
+        }
+    }
+
+    /**
+     * 获取json_val的类型
+     *
+     * @param \FFI\CData $json_val json对象或者json数组
+     * @return string object|array 类型
+     * @throws \Exception 不是json对象或者json数组
+     */
+    public static function jsonType(\FFI\CData $json_val): string
+    {
+        if ($json_val[0]->wrapping_value[0]->type === Type::obj->value) {
+            return 'object';
+        } else if ($json_val[0]->wrapping_value[0]->type === Type::arr->value) {
+            return 'array';
+        } else {
+            throw new \Exception('It must be a json object.');
+        }
     }
 }
