@@ -1,6 +1,6 @@
 {
     "name": "workbunny/pjson",
-    "description": "PHP JSON parser with less memory footprint than native parsing.",
+    "description": "PJson is used to parse JSON data and provide efficient memory management optimization",
     "type": "library",
     "license": "MIT",
     "keywords": [
