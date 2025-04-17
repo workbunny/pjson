@@ -13,6 +13,7 @@
 ## 安装
 
 ```bash
+# 暂未开启
 composer require workbunny/pjson
 ```
 
