@@ -3,13 +3,6 @@
 处理json数组相关操作。
 
 ```php
-/**
- * 初始化一个 JSON 数组值
- *
- * @return \FFI\CData
- */
-public static function init(): \FFI\CData
-{}
 
 /**
  * 获取json数组中的字符串

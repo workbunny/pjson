@@ -5,22 +5,11 @@ declare(strict_types=1);
 
 namespace Workbunny\PJson;
 
+/**
+ * json数组对象操作类
+ */
 class Arr extends Base
 {
-
-    /**
-     * 初始化一个 JSON 数组值
-     *
-     * @return \FFI\CData
-     */
-    public static function init(): \FFI\CData
-    {
-        $json_val = self::ffi()->json_value_init_array();
-        $json_arr = self::ffi()->json_value_get_array($json_val);
-        self::ffi()->json_value_free($json_val);
-        return $json_arr;
-    }
-
     /**
      * 获取json数组中的字符串
      *

@@ -69,6 +69,11 @@ typedef int JSON_Status;
 
 // 解析json字符串，返回json_val结构体
 JSON_Value *json_parse_string(const char *string);
+
+/* 解析文件中的第一个 JSON 值并忽略注释（/ * * / 和 //），
+      出错时返回 NULL */
+JSON_Value *json_parse_file_with_comments(const char *filename);
+
 // json_val结构体转json_obj结构体
 JSON_Object *json_value_get_object(const JSON_Value *value);
 /* 获取包装对象的 JSON 值 */
@@ -77,14 +82,9 @@ JSON_Value *json_object_get_wrapping_value(const JSON_Object *object);
 JSON_Value *json_array_get_wrapping_value(const JSON_Array *array);
 /* 获取 JSON 值的类型 */
 JSON_Value_Type json_type(const JSON_Value *value);
-/* 获取 JSON 值对应的数组 */
-JSON_Array *json_value_get_array(const JSON_Value *value);
-/* 初始化一个 JSON 对象值 */
-JSON_Value *json_value_init_object(void);
-/* 初始化一个 JSON 数组值 */
-JSON_Value *json_value_init_array(void);
 /* 释放一个 JSON 值 */
 void json_value_free(JSON_Value *value);
+
 // json_obj结构体操作----------------
 
 // 获取json_obj结构体中的json_val结构体
@@ -155,7 +155,7 @@ JSON_Status json_object_dotremove(JSON_Object *object, const char *key);
 JSON_Status json_object_clear(JSON_Object *object);
 
 /*
- *JSON 数组
+ *JSON 数组-----------------------------------------------------------
  */
 /* 获取数组中指定索引处的值 */
 JSON_Value *json_array_get_value(const JSON_Array *array, size_t index);
@@ -202,6 +202,47 @@ JSON_Status json_array_append_number(JSON_Array *array, double number);
 JSON_Status json_array_append_boolean(JSON_Array *array, int boolean);
 JSON_Status json_array_append_null(JSON_Array *array);
 
-// 解析json_val结构体,返回字符串
+// json_val对象----------------------------
+/*
+ *JSON 值
+ */
+/* 初始化一个 JSON 对象值 */
+JSON_Value *json_value_init_object(void);
+/* 初始化一个 JSON 数组值 */
+JSON_Value *json_value_init_array(void);
+/* 初始化一个 JSON 字符串值，复制传入的字符串 */
+JSON_Value *json_value_init_string(const char *string);
+/* 初始化一个 JSON 字符串值，复制传入的字符串，长度不应包括末尾的空字符 */
+JSON_Value *json_value_init_string_with_len(const char *string, size_t length);
+/* 初始化一个 JSON 数字值 */
+JSON_Value *json_value_init_number(double number);
+/* 初始化一个 JSON 布尔值 */
+JSON_Value *json_value_init_boolean(int boolean);
+/* 初始化一个 JSON 空值 */
+JSON_Value *json_value_init_null(void);
+/* 深度复制一个 JSON 值 */
+JSON_Value *json_value_deep_copy(const JSON_Value *value);
+/* 释放一个 JSON 值 */
+void json_value_free(JSON_Value *value);
+
+/* 获取 JSON 值的类型 */
+JSON_Value_Type json_value_get_type(const JSON_Value *value);
+/* 获取 JSON 值对应的对象 */
+JSON_Object *json_value_get_object(const JSON_Value *value);
+/* 获取 JSON 值对应的数组 */
+JSON_Array *json_value_get_array(const JSON_Value *value);
+/* 获取 JSON 值对应的字符串 */
+const char *json_value_get_string(const JSON_Value *value);
+/* 获取 JSON 值对应的字符串长度（不包括末尾的空字符） */
+size_t json_value_get_string_len(const JSON_Value *value);
+/* 获取 JSON 值对应的数字 */
+double json_value_get_number(const JSON_Value *value);
+/* 获取 JSON 值对应的布尔值 */
+int json_value_get_boolean(const JSON_Value *value);
+/* 获取 JSON 值的父值 */
+JSON_Value *json_value_get_parent(const JSON_Value *value);
+
+// 解析json_val结构体,返回序列化字符串
 const char *json_serialize_to_string_pretty(const JSON_Value *value);
-void json_free_serialized_string(const char *string); /* 释放 json_serialize_to_string 和 json_serialize_to_string_pretty 返回的字符串 */
+/* 释放 json_serialize_to_string 和 json_serialize_to_string_pretty 返回的字符串 */
+void json_free_serialized_string(const char *string);

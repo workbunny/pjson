@@ -5,21 +5,11 @@ declare(strict_types=1);
 
 namespace Workbunny\PJson;
 
+/**
+ * json_obj对象操作类
+ */
 class Obj extends Base
 {
-    /**
-     * 初始化一个 JSON 对象值
-     *
-     * @return \FFI\CData
-     */
-    public static function init(): \FFI\CData
-    {
-        $json_val = self::ffi()->json_value_init_object();
-        $json_obj = self::ffi()->json_value_get_object($json_val);
-        self::ffi()->json_value_free($json_val);
-        return $json_obj;
-    }
-
     /**
      * 获取json对象的字符串值
      *

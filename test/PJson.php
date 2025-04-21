@@ -28,8 +28,12 @@ $start = microtime(true);
 
 // pjson解析
 $json = Json::decode($json_str);
-
-$type = Obj::getStr($json, 'type');
+// 获取数组
+$arr = Obj::getArr($json, 'features');
+// 获取数组的第一个元素
+$arr0 = Arr::getObj($arr, 0);
+// 获取数组的第一个元素的属性值
+$type = Obj::DotgetStr($arr0, 'properties.name');
 
 var_dump($type);
 

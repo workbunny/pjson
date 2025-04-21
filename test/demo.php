@@ -1,7 +1,11 @@
 <?php
 
-// 中国地区编码json
-// https://geo.datav.aliyun.com/areas_v3/bound/100000.json
+require_once dirname(__DIR__) . '/vendor/autoload.php';
+
+use Workbunny\PJson\Json;
+use Workbunny\PJson\Val;
+use Workbunny\PJson\Arr;
+use Workbunny\PJson\Obj;
 
 function formatBytes($bytes)
 {
@@ -14,18 +18,20 @@ function formatBytes($bytes)
     return round($bytes, 2) . $units[$i];
 }
 
+$num = '18';
+
+$val = '{"name":"workbunny","age":18,"sex":"男","hobby":["编程","学习","运动"],"address":{"city":"北京","street":"朝阳区"}}';
+
 // json文件内容
-$json_str = file_get_contents("https://geo.datav.aliyun.com/areas_v3/bound/100000.json");
+// $json_str = file_get_contents("https://geo.datav.aliyun.com/areas_v3/bound/100000.json");
 
 $start = microtime(true);
 
-// 原生解析
-$php_json = json_decode($json_str, true);
+// pjson解析
+$json_val = Json::parse_str($val);
+$json_arr = Json::getArr($json_val, "hobby");
+var_dump(Json::serialize($json_arr));
 
-// 拿其中一个字段
-$type = $php_json["features"][0]["properties"]["name"]; // 占用内存：2.26MB
-
-var_dump($type);
 
 // 占用内存
 $current_memory = memory_get_usage();
