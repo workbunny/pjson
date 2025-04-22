@@ -224,4 +224,44 @@ class Json extends Base
             throw new \FFI\Exception("It must be a json_val object.");
         }
     }
+
+    /**
+     * json_val对象转php数组(如果数据过大会占用内存)
+     *
+     * @param \FFI\CData $json_val json_val对象
+     * @return mixed php数组
+     */
+    public static function toArray(\FFI\CData $json_val): mixed
+    {
+        $arr = [];
+        switch (self::type($json_val)) {
+            case "json_null":
+                $arr = null;
+                break;
+            case "json_bool":
+                $arr = Val::getBool($json_val);
+                break;
+            case "json_num":
+                $arr = Val::getNum($json_val);
+                break;
+            case "json_str":
+                $arr = Val::getStr($json_val);
+                break;
+            case "json_arr":
+                $json_arr = Val::getArr($json_val);
+                $let = Arr::getCount($json_arr);
+                for ($i = 0; $i < $let; $i++) {
+                    $arr[] = self::toArray(Arr::getVal($json_arr, $i));
+                }
+                break;
+            case "json_obj":
+                $json_obj = Val::getObj($json_val);
+                $let = Obj::getCount($json_obj);
+                for ($i = 0; $i < $let; $i++) {
+                    $arr[Obj::getKey($json_obj, $i)] = self::toArray(Obj::getVal($json_obj, Obj::getKey($json_obj, $i)));
+                }
+                break;
+        }
+        return $arr;
+    }
 }

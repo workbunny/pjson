@@ -26,6 +26,22 @@ class Arr extends Base
     }
 
     /**
+     * 获取json数组对象的值
+     *
+     * @param \FFI\CData $json_arr json数组对象
+     * @param integer $index 索引
+     * @return \FFI\CData json_val对象
+     */
+    public static function getVal(\FFI\CData $json_arr, int $index): \FFI\CData
+    {
+        $json_val = self::ffi()->json_array_get_value($json_arr, $index);
+        if ($json_val == null) {
+            throw new \Exception('Failed to obtain the array value.');
+        }
+        return $json_val;
+    }
+
+    /**
      * 获取json数组中的字符串
      *
      * @param \FFI\CData $json_arr json数组
