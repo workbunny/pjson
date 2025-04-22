@@ -16,6 +16,16 @@ public static function toVal(\FFI\CData $json_arr): \FFI\CData
 }
 
 /**
+ * 获取json数组对象的值
+ *
+ * @param \FFI\CData $json_arr json数组对象
+ * @param integer $index 索引
+ * @return \FFI\CData json_val对象
+ */
+public static function getVal(\FFI\CData $json_arr, int $index): \FFI\CData
+{}
+
+/**
  * 获取json数组中的字符串
  *
  * @param \FFI\CData $json_arr json数组

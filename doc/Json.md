@@ -123,4 +123,12 @@ public static function type(\FFI\CData $json_val): string
 public static function serialize(\FFI\CData $json_val): string
 {}
 
+/**
+ * json_val对象转php数组(如果数据过大会占用内存)
+ *
+ * @param \FFI\CData $json_val json_val对象
+ * @return mixed php数组
+ */
+public static function toArray(\FFI\CData $json_val): mixed
+{}
 ```

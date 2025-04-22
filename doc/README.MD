@@ -88,6 +88,10 @@ Arr::setBool($hobby,1,false); // 将第二个元素修改为false
 Arr::appendStr($hobby,"swimming"); // 在数组末尾追加一个元素
 /* 以此类推 */
 
+// 删除 数组元素
+Arr::remove($hobby, 0); // 删除第一个元素
+/* 以此类推 */
+
 // 将json_arr对象转换为json_val对象
 $json_val = Arr::toVal($hobby); // 这个是一个json_val对象，不能直接输出结果
 
@@ -100,5 +104,27 @@ echo Json::serialize($json_val);
     "traveling",
     "swimming"
 ] */
+
+```
+
+### 示例3
+
+解析json字符串 并且对json_obj对象进行操作
+
+```php
+// 解析json字符串，返回json_val对象
+$json_val = Json::parse_str('{"name":"workbunny","age":18,"isMan":true,"hobby":["reading","coding","traveling"],"address":{"city":"Shanghai","country":"China"}}');
+
+
+// 获取 对象值
+$address = Json::getObj($json_val,"address"); // 这个是一个json_obj对象，不能直接输出结果
+
+// 获取 json_obj对象的值
+$city = Obj::getStr($address,"city"); // 结果是：Shanghai
+/* 以此类推 */
+
+// 修改 json_obj对象的值
+Obj::setStr($address,"city","Beijing"); // 将city的值修改为Beijing
+/* 以此类推 */
 
 ```
