@@ -60,6 +60,10 @@ $coding = Json::getStr($json_val,"hobby.1"); // 结果是：coding，使用点�
 // 序列号化json_val对象为字符串
 echo Json::serialize($json_val);
 
+// 转换为php数组（大数据不建议使用）
+$php_arr = Json::toArray($json_val); // 这个是一个php数组
+var_dump($php_arr);
+
 ```
 
 ### 示例2
@@ -127,4 +131,21 @@ $city = Obj::getStr($address,"city"); // 结果是：Shanghai
 Obj::setStr($address,"city","Beijing"); // 将city的值修改为Beijing
 /* 以此类推 */
 
+// 追加 json_obj对象的值
+Obj::setStr($address,"city2","Beijing");
+/* 以此类推 */
+
+// 删除 json_obj对象的值
+Obj::remove($address,"city"); // 删除city的值
+/* 以此类推 */
+
+$json_obj_val = Obj::toVal($address); // 这个是一个json_val对象，不能直接输出结果
+
+// 序列号化json_val对象为字符串
+echo Json::serialize($json_obj_val)."\n";
+
+/*结果： {
+    "city2": "Beijing",
+    "country": "China"
+} */
 ```
