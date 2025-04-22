@@ -3,12 +3,24 @@
 处理json对象相关操作
 
 ```php
+
 /**
-    * 初始化一个 JSON 对象值
-    *
-    * @return \FFI\CData
-    */
-public static function init(): \FFI\CData
+ * json_obj对象转换为json_val对象
+ *
+ * @param \FFI\CData $json_obj json_obj对象
+ * @return \FFI\CData json_val对象
+ */
+public static function toVal(\FFI\CData $json_obj): \FFI\CData
+{}
+
+/**
+ * 获取json对象的值
+ *
+ * @param \FFI\CData $json_obj json对象
+ * @param string $key 键名
+ * @return \FFI\CData json_val对象
+ */
+public static function getVal(\FFI\CData $json_obj, string $key): \FFI\CData
 {}
 
 /**
@@ -59,6 +71,19 @@ public static function getBool(\FFI\CData $json_obj, string $key): bool
     * @return float 数字值
     */
 public static function getNum(\FFI\CData $json_obj, string $key): float
+{}
+
+/**
+ * 获取json对象的值。
+ * 点表示法获取函数允许使用点符号访问嵌套对象中的值。
+ * 例如(objectA.objectB.value)。
+ * 由于 JSON 中的有效名称可能包含点，因此某些值可能无法通过这种方式访问。
+ *
+ * @param \FFI\CData $json_obj json对象
+ * @param string $key 键名
+ * @return \FFI\CData json_val对象
+ */
+public static function DotgetVal(\FFI\CData $json_obj, string $key): \FFI\CData
 {}
 
 /**

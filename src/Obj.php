@@ -5,19 +5,36 @@ declare(strict_types=1);
 
 namespace Workbunny\PJson;
 
+/**
+ * json_obj对象操作类
+ */
 class Obj extends Base
 {
     /**
-     * 初始化一个 JSON 对象值
+     * json_obj对象转换为json_val对象
      *
-     * @return \FFI\CData
+     * @param \FFI\CData $json_obj json_obj对象
+     * @return \FFI\CData json_val对象
      */
-    public static function init(): \FFI\CData
+    public static function toVal(\FFI\CData $json_obj): \FFI\CData
     {
-        $json_val = self::ffi()->json_value_init_object();
-        $json_obj = self::ffi()->json_value_get_object($json_val);
-        self::ffi()->json_value_free($json_val);
-        return $json_obj;
+        return self::ffi()->json_object_get_wrapping_value($json_obj);
+    }
+
+    /**
+     * 获取json对象的值
+     *
+     * @param \FFI\CData $json_obj json对象
+     * @param string $key 键名
+     * @return \FFI\CData json_val对象
+     */
+    public static function getVal(\FFI\CData $json_obj, string $key): \FFI\CData
+    {
+        $json_val = self::ffi()->json_object_get_value($json_obj, $key);
+        if ($json_val == null) {
+            throw new \Exception("Failed to obtain a value. Procedure.");
+        }
+        return $json_val;
     }
 
     /**
@@ -82,6 +99,25 @@ class Obj extends Base
     public static function getNum(\FFI\CData $json_obj, string $key): float
     {
         return self::ffi()->json_object_get_number($json_obj, $key);
+    }
+
+    /**
+     * 获取json对象的值。
+     * 点表示法获取函数允许使用点符号访问嵌套对象中的值。
+     * 例如(objectA.objectB.value)。
+     * 由于 JSON 中的有效名称可能包含点，因此某些值可能无法通过这种方式访问。
+     *
+     * @param \FFI\CData $json_obj json对象
+     * @param string $key 键名
+     * @return \FFI\CData json_val对象
+     */
+    public static function DotgetVal(\FFI\CData $json_obj, string $key): \FFI\CData
+    {
+        $json_val = self::ffi()->json_object_dotget_value($json_obj, $key);
+        if ($json_val == null) {
+            throw new \Exception("Failed to obtain a value. Procedure.");
+        }
+        return $json_val;
     }
 
     /**

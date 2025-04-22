@@ -3,12 +3,26 @@
 处理json数组相关操作。
 
 ```php
+
 /**
- * 初始化一个 JSON 数组值
+ * json数组对象转换为json_val对象
  *
- * @return \FFI\CData
+ * @param \FFI\CData $json_arr json数组对象
+ * @return \FFI\CData json_val对象
  */
-public static function init(): \FFI\CData
+public static function toVal(\FFI\CData $json_arr): \FFI\CData
+{
+    return self::ffi()->json_array_get_wrapping_value($json_arr);
+}
+
+/**
+ * 获取json数组对象的值
+ *
+ * @param \FFI\CData $json_arr json数组对象
+ * @param integer $index 索引
+ * @return \FFI\CData json_val对象
+ */
+public static function getVal(\FFI\CData $json_arr, int $index): \FFI\CData
 {}
 
 /**

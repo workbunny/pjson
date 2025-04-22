@@ -44,8 +44,8 @@ pjson
 
 ```php
 // pjson解析
-$json = Json::decode($json_str);
-$type = Obj::getStr($json, 'type');
+$json = Json::parse_str($json_str);
+$type = Json::getStr($json, 'type');
 var_dump($type);
 ```
 

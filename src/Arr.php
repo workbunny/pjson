@@ -5,20 +5,40 @@ declare(strict_types=1);
 
 namespace Workbunny\PJson;
 
+/**
+ * json数组对象操作类
+ */
 class Arr extends Base
 {
+    /**
+     * json数组对象转换为json_val对象
+     *
+     * @param \FFI\CData $json_arr json数组对象
+     * @return \FFI\CData json_val对象
+     */
+    public static function toVal(\FFI\CData $json_arr): \FFI\CData
+    {
+        $arr = self::ffi()->json_array_get_wrapping_value($json_arr);
+        if ($arr == null) {
+            throw new \Exception('The conversion of json values to a json array failed.');
+        }
+        return $arr;
+    }
 
     /**
-     * 初始化一个 JSON 数组值
+     * 获取json数组对象的值
      *
-     * @return \FFI\CData
+     * @param \FFI\CData $json_arr json数组对象
+     * @param integer $index 索引
+     * @return \FFI\CData json_val对象
      */
-    public static function init(): \FFI\CData
+    public static function getVal(\FFI\CData $json_arr, int $index): \FFI\CData
     {
-        $json_val = self::ffi()->json_value_init_array();
-        $json_arr = self::ffi()->json_value_get_array($json_val);
-        self::ffi()->json_value_free($json_val);
-        return $json_arr;
+        $json_val = self::ffi()->json_array_get_value($json_arr, $index);
+        if ($json_val == null) {
+            throw new \Exception('Failed to obtain the array value.');
+        }
+        return $json_val;
     }
 
     /**
@@ -30,7 +50,11 @@ class Arr extends Base
      */
     public static function getStr(\FFI\CData $json_arr, int $index): string
     {
-        return self::ffi()->json_array_get_string($json_arr, $index);
+        $str = self::ffi()->json_array_get_string($json_arr, $index);
+        if ($str == null) {
+            throw new \Exception('The value indexed by this json array is not a string.');
+        }
+        return $str;
     }
 
     /**
@@ -42,7 +66,11 @@ class Arr extends Base
      */
     public static function getObj(\FFI\CData $json_arr, int $index): \FFI\CData
     {
-        return self::ffi()->json_array_get_object($json_arr, $index);
+        $obj = self::ffi()->json_array_get_object($json_arr, $index);
+        if ($obj == null) {
+            throw new \Exception('The value indexed by this json array is not a json object.');
+        }
+        return $obj;
     }
 
     /**
@@ -54,7 +82,10 @@ class Arr extends Base
      */
     public static function getArr(\FFI\CData $json_arr, int $index): \FFI\CData
     {
-        return self::ffi()->json_array_get_array($json_arr, $index);
+        $arr = self::ffi()->json_array_get_array($json_arr, $index);
+        if ($arr == null) {
+            throw new \Exception('The value indexed by this json array is not a json array.');
+        }
     }
 
     /**
@@ -68,7 +99,7 @@ class Arr extends Base
     {
         $bool = self::ffi()->json_array_get_boolean($json_arr, $index);
         if ($bool == -1) {
-            throw new \Exception('Failed to obtain a Boolean value. Procedure.');
+            throw new \Exception('The value indexed by this json array is not a boolean.');
         }
         return $bool ? true : false;
     }
@@ -82,6 +113,13 @@ class Arr extends Base
      */
     public static function getNum(\FFI\CData $json_arr, int $index): float
     {
+        $json_val = self::ffi()->json_array_get_wrapping_value($json_arr);
+        if ($json_val == null) {
+            throw new \Exception('The value of the first parameter is not a json array object.');
+        }
+        if (Json::type($json_val) !== "json_arr") {
+            throw new \Exception('The value indexed by this json array is not a number.');
+        }
         return self::ffi()->json_array_get_number($json_arr, $index);
     }
 

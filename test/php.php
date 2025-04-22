@@ -1,7 +1,10 @@
 <?php
 
-// 中国地区编码json
-// https://geo.datav.aliyun.com/areas_v3/bound/100000.json
+require_once dirname(__DIR__) . '/vendor/autoload.php';
+
+use Workbunny\PJson\Json;
+use Workbunny\PJson\Val;
+use Workbunny\PJson\Arr;
 
 function formatBytes($bytes)
 {
@@ -14,18 +17,13 @@ function formatBytes($bytes)
     return round($bytes, 2) . $units[$i];
 }
 
-// json文件内容
-$json_str = file_get_contents("https://geo.datav.aliyun.com/areas_v3/bound/100000.json");
+$json = file_get_contents("https://geo.datav.aliyun.com/areas_v3/bound/100000.json");
 
 $start = microtime(true);
 
-// 原生解析
-$php_json = json_decode($json_str, true);
+$json_val = json_decode($json, true);
 
-// 拿其中一个字段
-$type = $php_json['type']; // 占用内存：2.26MB
-
-var_dump($type);
+var_dump($json_val["features"][0]["properties"]["name"]);
 
 // 占用内存
 $current_memory = memory_get_usage();
