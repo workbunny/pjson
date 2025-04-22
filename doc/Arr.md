@@ -5,6 +5,17 @@
 ```php
 
 /**
+ * json数组对象转换为json_val对象
+ *
+ * @param \FFI\CData $json_arr json数组对象
+ * @return \FFI\CData json_val对象
+ */
+public static function toVal(\FFI\CData $json_arr): \FFI\CData
+{
+    return self::ffi()->json_array_get_wrapping_value($json_arr);
+}
+
+/**
  * 获取json数组中的字符串
  *
  * @param \FFI\CData $json_arr json数组

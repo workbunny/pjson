@@ -37,7 +37,7 @@ class Val extends Base
     {
         $json_arr = self::ffi()->json_value_get_array($json_val);
         if ($json_arr === null) {
-            throw new \Exception("Failed to obtain the json_arr object");
+            throw new \Exception("This json value is not a json array.");
         }
         return $json_arr;
     }
@@ -50,7 +50,11 @@ class Val extends Base
      */
     public static function getStr(\FFI\CData $json_val): string
     {
-        return self::ffi()->json_value_get_string($json_val);
+        $str = self::ffi()->json_value_get_string($json_val);
+        if ($str === null) {
+            throw new \Exception("This json value is not a string.");
+        }
+        return $str;
     }
 
     /**
@@ -61,6 +65,9 @@ class Val extends Base
      */
     public static function getNum(\FFI\CData $json_val): int|float
     {
+        if (Json::type($json_val) !== "json_num") {
+            throw new \Exception("This json value is not a number.");
+        }
         return self::ffi()->json_value_get_number($json_val);
     }
 

@@ -220,8 +220,8 @@ class Json extends Base
     {
         try {
             return self::ffi()->json_serialize_to_string_pretty($json_val);
-        } catch (\Exception $e) {
-            throw new \Exception("It must be a json_val object.");
+        } catch (\FFI\Exception $e) {
+            throw new \FFI\Exception("It must be a json_val object.");
         }
     }
 }

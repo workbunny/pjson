@@ -20,17 +20,18 @@ function formatBytes($bytes)
 
 $num = '18';
 
-$val = '{"name":"workbunny","age":18,"sex":"男","hobby":["编程","学习","运动"],"address":{"city":"北京","street":"朝阳区"}}';
-
-// json文件内容
-// $json_str = file_get_contents("https://geo.datav.aliyun.com/areas_v3/bound/100000.json");
+$val = '{"name":"workbunny","isBool":false,"age":18,"sex":"男","hobby":["编程",60,"运动"],"address":{"city":"北京","street":"朝阳区"}}';
 
 $start = microtime(true);
 
 // pjson解析
 $json_val = Json::parse_str($val);
+// 获取数组
 $json_arr = Json::getArr($json_val, "hobby");
-var_dump(Json::serialize($json_arr));
+// 序列号数组
+// var_dump(Json::serialize(Arr::toVal($json_arr)));
+// 获取字符串
+// var_dump(Arr::getNum($json_arr, 1));
 
 
 // 占用内存

@@ -11,6 +11,17 @@ namespace Workbunny\PJson;
 class Obj extends Base
 {
     /**
+     * json_obj对象转换为json_val对象
+     *
+     * @param \FFI\CData $json_obj json_obj对象
+     * @return \FFI\CData json_val对象
+     */
+    public static function toVal(\FFI\CData $json_obj): \FFI\CData
+    {
+        return self::ffi()->json_object_get_wrapping_value($json_obj);
+    }
+
+    /**
      * 获取json对象的字符串值
      *
      * @param \FFI\CData $json_obj json对象
