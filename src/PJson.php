@@ -10,6 +10,9 @@ use JsonException;
 
 /**
  * @method static CData json_parse_string(string $json) 解析json字符串
+ * @method static CData json_parse_file(string $fileName) 解析json文件
+ * @method static CData json_parse_string_with_comments(string $json) 解析json字符串,忽略注释
+ * @method static CData json_parse_file_with_comments(string $fileName) 解析json文件,忽略注释
  *
  * @method static int json_value_get_type(CData $jsonValue) 获取json_value类型
  * @method static string json_value_get_string(CData $jsonValue) 获取json_value字符串
@@ -97,13 +100,19 @@ class PJson
     /**
      * 解析json字符串
      *
-     * @param string $json
+     * @param string $jsonOrFileName
+     * @param bool $withComments
      * @return Types
      * @throws JsonException
      */
-    public function decode(string $json): Types
+    public function decode(string $jsonOrFileName, bool $withComments = false): Types
     {
-        if (!$jsonValue = Pjson::json_parse_string($json)) {
+        if (file_exists($jsonOrFileName)) {
+            $func = $withComments ? 'json_parse_file_with_comments' : 'json_parse_file';
+        } else {
+            $func = $withComments ? 'json_parse_string_with_comments' : 'json_parse_string';
+        }
+        if (!$jsonValue = Pjson::$func($jsonOrFileName)) {
             throw new JsonException('json string format error.', 0);
         }
         return new Types($jsonValue);
