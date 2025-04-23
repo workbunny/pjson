@@ -3,12 +3,8 @@
 
 ## 依赖
 
-- PHP 8.1 或更高版本
-- Composer 2.0 或更高版本
-- PHP 扩展 `ffi` 已启用
-- linux 系统
-- windows 系统
-- mac 系统(暂未开启)
+- `PHP` >= 8.1
+- `ext-FFI` *
 
 ## 安装
 
@@ -17,49 +13,103 @@
 composer require workbunny/pjson
 ```
 
-## 如何使用
+## 使用
 
-[文档](doc/README.MD)
-
-## 测试对比结果
-
-> 以此json为例 `https://geo.datav.aliyun.com/areas_v3/bound/100000.json`
-
-php原生
+### decode
 
 ```php
-// 原生解析
-$php_json = json_decode($json_str, true);
-// 拿其中一个字段
-$type = $php_json['type'];
-var_dump($type);
-```
+$pjson = new Workbunny\PJson\Pjson();
 
-```
-当前内存占用: 2.25MB
-执行耗时: 0.0042 秒
-```
+// 解析 jsonString
+$jsonString = '{/*ww*/"name":"workbunny","isBool":false,"age":18,"sex":"男","hobby":["编程",60,"运动"],"address":{"city":"北京","street":"朝阳区"}}';
+$object = $pjson->decode($jsonString, true);
 
-pjson
+// 解析 jsonFile
+$file = $pjson->decode(__DIR__.'/json.json', true);
+
+// 支持遍历
+foreach ($object as $key => $value) {
+    var_dump($key, $value);
+}
+// count
+var_dump(count($object));
+// get
+var_dump(
+    $object['name'],
+    $object['address']['city'],
+    $object['hobby'][1],
+);
+// set
+$object['name'] = 'workbunny-1';
+$object['address']['city'] = '上海';
+$object['hobby'][1] = '66';
+// json encode
+var_dump($object->serialize());
+```
+### decode
 
 ```php
-// pjson解析
-$json = Json::parse_str($json_str);
-$type = Json::getStr($json, 'type');
-var_dump($type);
+$pjson = new Workbunny\PJson\Pjson();
+var_dump(
+    // string
+    $pjson->encode('aaa'),
+    // bool
+    $pjson->encode(true),
+    // number
+    $pjson->encode(123),
+    // null
+    $pjson->encode(null),
+    // array
+    $pjson->encode([
+        'name' => 'workbunny',
+        'isBool' => false,
+        'address' => [
+            'city' => '北京',
+            'street' => '朝阳区'
+        ],
+        'hobby' => [
+            '编程',
+            60,
+            '运动'
+        ]
+    ]),
+);
 ```
 
+### 进阶用法
+
+#### 使用`c api`
+```php
+Workbunny\PJson\PJson::json_array_append_value()
+Workbunny\PJson\PJson::json_array_append_string()
+
+// .....
+
+// PJson类实现了魔术方法，静态调用PJson.h声明的 c-api
 ```
-当前内存占用: 572.92KB
-执行耗时: 0.0137 秒
+
+#### 自定义头文件/动态库
+```php
+$libPath = '你的动态库文件路径';
+$headerPath = '你的头文件路径';
+\Workbunny\PJson\PJson::ffi($libPath, $headerPath);
+
+// ......
+
+// 执行逻辑
 ```
 
-## 编译json动态库
+#### 编译动态库
 
-编译适合自己系统的动态库
-
-`build` 文件夹
 
 ```bash
-gcc parson.c -shared -o Json.so -O2 -Wall -Wextra -std=c89 -pedantic-errors -DTESTS_MAIN 
+./build/build.sh 
 ```
+
+```cmd
+./build/build.cmd
+```
+
+## 性能对比
+
+// todo

@@ -121,9 +121,25 @@ class Types implements ArrayAccess, Iterator, Countable
             CType::TYPE_ENUM        => $CType->getEnumKind(),
             CType::TYPE_VOID        => null,
             CType::TYPE_FUNC        => 'CData<function>{}',
-//            CType::TYPE_ARRAY,
-//            CType::TYPE_STRUCT, // todo
-            default                 => $CData
+            CType::TYPE_STRUCT      => call_user_func(function () use ($CData, $CType) {
+                $result = new \stdClass();
+                foreach ($CType->getStructFieldNames() as $field) {
+                    $fieldType = $CType->getStructFieldType($field);
+                    $result->$field = $this->c2p($CType->$field, $fieldType);
+                }
+                return $result;
+            }),
+            CType::TYPE_ARRAY       => call_user_func(function () use ($CData, $CType) {
+                $result = [];
+                $elementType = $CType->getArrayElementType();
+                $length = $CType->getArrayLength();
+
+                for ($i = 0; $i < $length; $i++) {
+                    $result[] = $this->c2p($CType[$i], $elementType);
+                }
+                return $result;
+            }),
+            default                 => $CData->cdata,
         };
     }
 
@@ -199,26 +215,28 @@ class Types implements ArrayAccess, Iterator, Countable
         }
     }
 
-    /**
-     * @param mixed $offset
-     * @param mixed $value
-     * @return void
-     */
+    /** @inheritdoc  */
     public function offsetSet(mixed $offset, mixed $value): void
     {
         try {
             if ($this->offsetExists($offset)) {
                 $this->offsetUnset($offset);
             }
+            // 数据转换
             $value = $this->p2c($value);
-            match ($this->type) {
-                // 对象:
-                Type::obj   => PJson::json_object_set_value(PJson::json_value_get_object($this->data), $offset, $value),
-                // 数组:
-                Type::arr   => PJson::json_array_append_value(PJson::json_value_get_array($this->data), $value),
-                Type::err   => throw new Error('Types error', -1),
-                default     => $this->data = $value,
-            };
+            switch ($this->type) {
+                case Type::obj:
+                    PJson::json_object_set_value(PJson::json_value_get_object($this->data), $offset, $value);
+                    break;
+                case Type::arr:
+                    PJson::json_array_append_value(PJson::json_value_get_array($this->data), $value);
+                    break;
+                case Type::err:
+                    throw new Error('Types error', -1);
+                default:
+                    $this->data = $value;
+                    break;
+            }
         } catch (Error $error) {
             throw $error;
         } catch (\Throwable $throwable) {
@@ -226,10 +244,7 @@ class Types implements ArrayAccess, Iterator, Countable
         }
     }
 
-    /**
-     * @param mixed $offset
-     * @return void
-     */
+    /** @inheritdoc  */
     public function offsetUnset(mixed $offset): void
     {
         if (!$this->offsetExists($offset)) {
