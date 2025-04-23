@@ -19,13 +19,17 @@ use JsonException;
  * @method static CData json_value_get_array(CData $jsonValue) 获取json_value数组
  *
  * @method static CData json_object_get_value(CData $jsonObject, mixed $key) 获取json_object对象中的值
+ * @method static CData json_object_get_value_at(CData $jsonObject, int $index) 获取json_object对象中的值
+ * @method static string json_object_get_name(CData $jsonObject, int $index) 获取json_object对象中的key
  * @method static int json_object_has_value(CData $jsonObject, mixed $key) 判断json_object对象中是否存在key
  * @method static int json_object_remove(CData $jsonObject, mixed $key) 删除json_object对象中的值
  * @method static int json_object_set_value(CData $jsonObject, mixed $key, CData $jsonValue) 添加json_object对象中的值
+ * @method static int json_object_get_count(CData $jsonObject) 获取json_object对象中的值数量
  *
  * @method static CData json_array_get_value(CData $jsonArray, int $index) 获取json_array对象中的值
  * @method static int json_array_remove(CData $jsonArray, int $index) 删除json_array对象中的值
  * @method static int json_array_append_value(CData $jsonArray, CData $jsonValue) 添加json_array对象中的值
+ * @method static int json_array_get_count(CData $jsonArray) 获取json_array对象中的值数量
  *
  * @method static CData json_value_init_object() 初始化json_value对象
  * @method static CData json_value_init_array() 初始化json_value数组

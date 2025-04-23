@@ -5,12 +5,14 @@ declare(strict_types=1);
 namespace Workbunny\PJson;
 
 use ArrayAccess;
+use Countable;
 use Error;
 use FFI;
 use FFI\CData;
 use FFI\CType;
+use Iterator;
 
-class Types implements ArrayAccess
+class Types implements ArrayAccess, Iterator, Countable
 {
 
     /**
@@ -30,6 +32,12 @@ class Types implements ArrayAccess
      * @var Type|null
      */
     protected ?Type $type;
+
+    /** @var int  */
+    protected int $offset = 0;
+
+    /** @var int  */
+    protected int $count = -1;
 
     /**
      * @param mixed $data
@@ -223,5 +231,55 @@ class Types implements ArrayAccess
                 $this->data = null;
                 break;
         }
+    }
+
+    /** @inheritdoc  */
+    public function current(): mixed
+    {
+        if ($this->type === Type::obj) {
+            return $this->offsetGet(Pjson::json_object_get_name(PJson::json_value_get_object($this->data), $this->offset));
+        }
+        return $this->offsetGet($this->offset);
+    }
+
+    /** @inheritdoc  */
+    public function next(): void
+    {
+        ++ $this->offset;
+    }
+
+    /** @inheritdoc  */
+    public function key(): mixed
+    {
+        return match ($this->type) {
+            Type::obj => PJson::json_object_get_name(PJson::json_value_get_object($this->data), $this->offset),
+            Type::arr => $this->offset,
+            default   => null,
+        };
+    }
+
+    /** @inheritdoc  */
+    public function valid(): bool
+    {
+        return $this->count() > $this->offset;
+    }
+
+    /** @inheritdoc  */
+    public function rewind(): void
+    {
+        $this->offset = 0;
+    }
+
+    /** @inheritdoc  */
+    public function count(): int
+    {
+        if ($this->count < 0) {
+            $this->count = match ($this->type) {
+                Type::obj => PJson::json_object_get_count(PJson::json_value_get_object($this->data)),
+                Type::arr => PJson::json_array_get_count(PJson::json_value_get_array($this->data)),
+                default   => 0,
+            };
+        }
+        return $this->count;
     }
 }

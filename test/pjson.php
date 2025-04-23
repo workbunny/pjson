@@ -9,6 +9,9 @@ $pjson = new Workbunny\PJson\Pjson();
 // 解析
 $jsonString = '{"name":"workbunny","isBool":false,"age":18,"sex":"男","hobby":["编程",60,"运动"],"address":{"city":"北京","street":"朝阳区"}}';
 $object = $pjson->decode($jsonString);
+foreach ($object as $key => $value) {
+    dump($key, $value);
+}
 // get
 dump(
     $object['name'],
