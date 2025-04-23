@@ -46,7 +46,7 @@ $object['hobby'][1] = '66';
 // json encode
 var_dump($object->serialize());
 ```
-### decode
+### encode
 
 ```php
 $pjson = new Workbunny\PJson\Pjson();
