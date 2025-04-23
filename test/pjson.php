@@ -9,11 +9,17 @@ $pjson = new Workbunny\PJson\Pjson();
 // 解析
 $jsonString = '{"name":"workbunny","isBool":false,"age":18,"sex":"男","hobby":["编程",60,"运动"],"address":{"city":"北京","street":"朝阳区"}}';
 $object = $pjson->decode($jsonString);
+// get
 dump(
     $object['name'],
     $object['address']['city'],
     $object['hobby'][0],
 );
+// set
+$object['name'] = 'workbunny-1';
+$object['address']['city'] = '上海';
+$object['hobby'][1] = '66';
+dump($object->serialize());
 
 // 序列化
 dump(
