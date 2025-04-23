@@ -36,6 +36,9 @@ class Types implements ArrayAccess, Iterator, Countable
     /** @var int  */
     protected int $offset = 0;
 
+    /** @var array<int, string>  */
+    protected array $offsetMapping = [];
+
     /** @var int  */
     protected int $count = -1;
 
@@ -133,17 +136,11 @@ class Types implements ArrayAccess, Iterator, Countable
      */
     public function offsetExists(mixed $offset): bool
     {
-        switch ($this->type) {
-            case Type::obj:
-                return (bool)Pjson::json_object_has_value(PJson::json_value_get_object($this->data), $offset);
-            case Type::arr:
-                return true;
-            default:
-                if ($offset !== null) {
-                    return false;
-                }
-                return isset($this->data);
-        }
+        return match ($this->type) {
+            Type::obj => (bool)Pjson::json_object_has_value(PJson::json_value_get_object($this->data), $offset),
+            Type::arr => ($offset !== null),
+            default => ($offset === null and isset($this->data)),
+        };
     }
 
     /**
@@ -154,6 +151,7 @@ class Types implements ArrayAccess, Iterator, Countable
     {
         try {
             if (!$this->offsetExists($offset)) {
+                $offset = is_null($offset) ? 'NULL' : $offset;
                 throw new Error("Types type '{$this->type?->name}' not exists key '$offset'");
             }
             $result = match ($this->type) {
@@ -164,12 +162,12 @@ class Types implements ArrayAccess, Iterator, Countable
 
                 Type::str   => PJson::json_value_get_string($this->data),
                 Type::num   => PJson::json_value_get_number($this->data),
-                Type::bool  => PJson::json_value_get_boolean($this->data),
+                Type::bool  => (bool)PJson::json_value_get_boolean($this->data),
                 Type::null  => null,
                 default     => throw new Error('Types error', -1),
             };
             if (
-                $result instanceof Types and
+                ($result instanceof Types) and
                 !in_array($result->type(), [Type::obj, Type::arr])
             ) {
                 $result = $result->offsetGet(null);
@@ -193,14 +191,14 @@ class Types implements ArrayAccess, Iterator, Countable
             if ($this->offsetExists($offset)) {
                 $this->offsetUnset($offset);
             }
+            $value = $this->p2c($value);
             match ($this->type) {
                 // 对象:
-                Type::obj => PJson::json_object_set_value(PJson::json_value_get_object($this->data), $offset, $this->p2c($value)),
+                Type::obj   => PJson::json_object_set_value(PJson::json_value_get_object($this->data), $offset, $value),
                 // 数组:
-                Type::arr => PJson::json_array_append_value(PJson::json_value_get_array($this->data), $this->p2c($value)),
-
+                Type::arr   => PJson::json_array_append_value(PJson::json_value_get_array($this->data), $value),
                 Type::err   => throw new Error('Types error', -1),
-                default     => $this->data = $this->p2c($value),
+                default     => $this->data = $value,
             };
         } catch (Error $error) {
             throw $error;
@@ -216,11 +214,11 @@ class Types implements ArrayAccess, Iterator, Countable
     public function offsetUnset(mixed $offset): void
     {
         if (!$this->offsetExists($offset)) {
+            $offset = is_null($offset) ? 'NULL' : $offset;
             throw new Error("Types type '{$this->type?->name}' not exists key '$offset'");
         }
         switch ($this->type) {
             case Type::obj:
-
                 Pjson::json_object_remove(PJson::json_value_get_object($this->data), $offset);
                 break;
             case Type::arr:
@@ -228,6 +226,7 @@ class Types implements ArrayAccess, Iterator, Countable
                 break;
             default:
                 $this->data = null;
+                $this->type = null;
                 break;
         }
     }
@@ -236,7 +235,8 @@ class Types implements ArrayAccess, Iterator, Countable
     public function current(): mixed
     {
         if ($this->type === Type::obj) {
-            return $this->offsetGet(Pjson::json_object_get_name(PJson::json_value_get_object($this->data), $this->offset));
+            $this->offsetMapping[$this->offset] ??= PJson::json_object_get_name(PJson::json_value_get_object($this->data), $this->offset);
+            return $this->offsetGet($this->offsetMapping[$this->offset]);
         }
         return $this->offsetGet($this->offset);
     }
@@ -244,14 +244,14 @@ class Types implements ArrayAccess, Iterator, Countable
     /** @inheritdoc  */
     public function next(): void
     {
-        ++ $this->offset;
+        $this->offset ++;
     }
 
     /** @inheritdoc  */
     public function key(): mixed
     {
         return match ($this->type) {
-            Type::obj => PJson::json_object_get_name(PJson::json_value_get_object($this->data), $this->offset),
+            Type::obj => ($this->offsetMapping[$this->offset] ??= PJson::json_object_get_name(PJson::json_value_get_object($this->data), $this->offset)),
             Type::arr => $this->offset,
             default   => null,
         };
