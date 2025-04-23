@@ -71,7 +71,6 @@ class Types implements ArrayAccess, Iterator, Countable
             'boolean'   => PJson::json_value_init_boolean($data),
             'array'     => call_user_func(function () use ($data) {
                 if (array_is_list($data)){
-                    ;
                     $jsonArray = Pjson::json_value_get_array($jsonValue = PJson::json_value_init_array());
                     foreach ($data as $value) {
                         Pjson::json_array_append_value($jsonArray, $this->p2c($value));

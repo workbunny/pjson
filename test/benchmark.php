@@ -33,13 +33,6 @@ function iterateDecodedData($data)
  */
 function benchmark(string $label, callable $func, int $iterations = 1)
 {
-    // 预热：预先调用一次确保初始化、JIT 等影响不计入正式测试
-    $dummy = $func();
-    // 若返回值是数据结构，强制遍历，确保所有反序列化工作都执行
-    if (is_array($dummy) || is_object($dummy)) {
-        iterateDecodedData($dummy);
-    }
-
     $startTime   = microtime(true);
     $memoryStart = memory_get_usage();
 
@@ -49,7 +42,6 @@ function benchmark(string $label, callable $func, int $iterations = 1)
             iterateDecodedData($result);
         }
     }
-
     $memoryEnd = memory_get_usage();
     $endTime   = microtime(true);
 
