@@ -175,6 +175,11 @@ class Types implements ArrayAccess
         }
     }
 
+    /**
+     * @param mixed $offset
+     * @param mixed $value
+     * @return void
+     */
     public function offsetSet(mixed $offset, mixed $value): void
     {
         try {
@@ -183,15 +188,12 @@ class Types implements ArrayAccess
             }
             match ($this->type) {
                 // 对象:
-                Type::obj => new Types(PJson::json_object_get_value(PJson::json_value_get_object($this->data), $offset)),
+                Type::obj => PJson::json_object_set_value(PJson::json_value_get_object($this->data), $offset, $this->p2c($value)),
                 // 数组:
-                Type::arr => new Types(PJson::json_array_get_value(PJson::json_value_get_array($this->data), $offset)),
+                Type::arr => PJson::json_array_append_value(PJson::json_value_get_array($this->data), $this->p2c($value)),
 
-                Type::str   => PJson::json_value_get_string($this->data),
-                Type::num   => PJson::json_value_get_number($this->data),
-                Type::bool  => PJson::json_value_get_boolean($this->data),
-                Type::null  => null,
-                default     => throw new Error('Types error', -1),
+                Type::err   => throw new Error('Types error', -1),
+                default     => $this->data = $this->p2c($value),
             };
         } catch (Error $error) {
             throw $error;
