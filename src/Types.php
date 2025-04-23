@@ -20,9 +20,9 @@ class Types implements ArrayAccess
      *  3. CData JSON_VALUE
      *  4. PHPData
      *
-     * @var mixed|null
+     * @var CData|null
      */
-    protected mixed $data;
+    protected ?CData $data;
 
     /**
      * CData类型
@@ -37,16 +37,11 @@ class Types implements ArrayAccess
      */
     public function __construct(mixed $data = null)
     {
-        $data = $this->p2c($data);
-        $this->type = Type::tryFrom(PJson::json_value_get_type($data));
+        $this->data = $this->p2c($data);
+        $this->type = Type::tryFrom(PJson::json_value_get_type($this->data));
         if ($this->type === Type::err) {
             throw new Error('json value type error');
         }
-        $this->data = match ($this->type) {
-            Type::obj   => Pjson::json_value_get_object($data),
-            Type::arr   => Pjson::json_value_get_array($data),
-            default     => $data
-        };
     }
 
     /**
@@ -57,6 +52,9 @@ class Types implements ArrayAccess
      */
     public function p2c(mixed $data): CData
     {
+        if ($data instanceof CData) {
+            return $data;
+        }
         return match ($type = gettype($data)) {
             'NULL'      => PJson::json_value_init_null(),
             'string'    => PJson::json_value_init_string($data),
@@ -65,11 +63,11 @@ class Types implements ArrayAccess
             'boolean'   => PJson::json_value_init_boolean($data),
             'array'     => call_user_func(function () use ($data) {
                 if (array_is_list($data)){
+                    ;
                     $jsonArray = Pjson::json_value_get_array($jsonValue = PJson::json_value_init_array());
                     foreach ($data as $value) {
                         Pjson::json_array_append_value($jsonArray, $this->p2c($value));
                     }
-                    return $jsonValue;
                 } else {
                     $jsonObject = Pjson::json_value_get_object($jsonValue = PJson::json_value_init_object());
                     foreach ($data as $key => $value) {
@@ -79,7 +77,7 @@ class Types implements ArrayAccess
                 return $jsonValue;
             }),
             'object'    => call_user_func(function () use ($data) {
-                return ($data instanceof CData) ? $data : PJson::json_value_init_string("PHPData<object> {}");
+                return PJson::json_value_init_string("PHPData<object> {}");
             }),
             default     => PJson::json_value_init_string("PHPData<$type> {}"),
         };
@@ -96,16 +94,20 @@ class Types implements ArrayAccess
         return match (FFI::typeof($data)->getKind()) {
             CType::TYPE_CHAR,
             CType::TYPE_POINTER => FFI::string($data),
-            default     => $data,
+            default             => $data,
         };
     }
 
     /**
+     * @param bool $pretty
      * @return mixed
      */
-    public function serialize(): mixed
+    public function serialize(bool $pretty = false): mixed
     {
-        return $this->c2p(PJson::json_serialize_to_string($this->data));
+        return $this->c2p($pretty
+            ? PJson::json_serialize_to_string_pretty($this->data)
+            : PJson::json_serialize_to_string($this->data)
+        );
     }
 
     /**
@@ -126,7 +128,7 @@ class Types implements ArrayAccess
     {
         switch ($this->type) {
             case Type::obj:
-                return (bool)Pjson::json_object_has_value($this->data, $offset);
+                return (bool)Pjson::json_object_has_value(PJson::json_value_get_object($this->data), $offset);
             case Type::arr:
                 return true;
             default:
@@ -149,15 +151,14 @@ class Types implements ArrayAccess
             }
             $result = match ($this->type) {
                 // 对象:
-                Type::obj => new Types(PJson::json_object_get_value($this->data, $offset)),
+                Type::obj => new Types(PJson::json_object_get_value(PJson::json_value_get_object($this->data), $offset)),
                 // 数组:
-                Type::arr => new Types(PJson::json_array_get_value($this->data, $offset)),
+                Type::arr => new Types(PJson::json_array_get_value(PJson::json_value_get_array($this->data), $offset)),
 
                 Type::str   => PJson::json_value_get_string($this->data),
                 Type::num   => PJson::json_value_get_number($this->data),
                 Type::bool  => PJson::json_value_get_boolean($this->data),
                 Type::null  => null,
-                null        => $this->data,
                 default     => throw new Error('Types error', -1),
             };
             if (
@@ -180,34 +181,11 @@ class Types implements ArrayAccess
             if ($this->offsetExists($offset)) {
                 $this->offsetUnset($offset);
             }
-            switch ($this->type) {
-                case Type::obj:
-
-            }
             match ($this->type) {
-                // PHPData
-                null => call_user_func(function () use ($offset, $value) {
-                    switch ($t = gettype($this->data)) {
-                        case 'array':
-                            $this->data[$offset] = $value;
-                            break;
-                        case 'object':
-                            $this->data->$offset = $value;
-                            break;
-                        case 'string':
-                            if (is_int($offset)) {
-                                $this->data[] = $value;
-                                break;
-                            }
-                            throw new Error("Types type 'PHPData->string' not exists key '$offset'", -1);
-                        default:
-                            throw new Error("Types type 'PHPData->$t' not exists key '$offset'", -1);
-                    }
-                }),
                 // 对象:
-                Type::obj => new Types(PJson::json_object_get_value($this->data, $offset)),
+                Type::obj => new Types(PJson::json_object_get_value(PJson::json_value_get_object($this->data), $offset)),
                 // 数组:
-                Type::arr => new Types(PJson::json_array_get_value($this->data, $offset)),
+                Type::arr => new Types(PJson::json_array_get_value(PJson::json_value_get_array($this->data), $offset)),
 
                 Type::str   => PJson::json_value_get_string($this->data),
                 Type::num   => PJson::json_value_get_number($this->data),
@@ -234,10 +212,10 @@ class Types implements ArrayAccess
         switch ($this->type) {
             case Type::obj:
 
-                Pjson::json_object_remove($this->data, $offset);
+                Pjson::json_object_remove(PJson::json_value_get_object($this->data), $offset);
                 break;
             case Type::arr:
-                Pjson::json_array_remove($this->data, $offset);
+                Pjson::json_array_remove(PJson::json_value_get_array($this->data), $offset);
                 break;
             default:
                 $this->data = null;

@@ -4,27 +4,39 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
+$pjson = new Workbunny\PJson\Pjson();
 
-//$jsonString = '{"name":"workbunny","isBool":false,"age":18,"sex":"男","hobby":["编程",60,"运动"],"address":{"city":"北京","street":"朝阳区"}}';
-//
-//$object = (new \Workbunny\PJson\PJson())->decode($jsonString);
-//
-//
-//dump(
-//    $object['name'],
-//    $object['address']['city'],
-//    $object['hobby'][0],
-//);
+// 解析
+$jsonString = '{"name":"workbunny","isBool":false,"age":18,"sex":"男","hobby":["编程",60,"运动"],"address":{"city":"北京","street":"朝阳区"}}';
+$object = $pjson->decode($jsonString);
+dump(
+    $object['name'],
+    $object['address']['city'],
+    $object['hobby'][0],
+);
 
-dump((new \Workbunny\PJson\Types([1,2]))->serialize());
-//$object = (new \Workbunny\PJson\PJson())->encode([
-//    'a' => 'aaa',
-//    'b' => [
-//        'a' => '123'
-//    ],
-//    'c' => [
-//        '123'
-//    ]
-//]);
-//
-//dump($object);
+// 序列化
+dump(
+    // string
+    $pjson->encode('aaa'),
+    // bool
+    $pjson->encode(true),
+    // number
+    $pjson->encode(123),
+    // null
+    $pjson->encode(null),
+    // array
+    $pjson->encode([
+        'name' => 'workbunny',
+        'isBool' => false,
+        'address' => [
+            'city' => '北京',
+            'street' => '朝阳区'
+        ],
+        'hobby' => [
+            '编程',
+            60,
+            '运动'
+        ]
+    ]),
+);

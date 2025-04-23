@@ -106,12 +106,15 @@ class PJson
     }
 
     /**
+     * 编码json数据
+     *
      * @param mixed $data
-     * @return mixed
+     * @param bool $pretty
+     * @return string
      */
-    public function encode(mixed $data): mixed
+    public function encode(mixed $data, bool $pretty = false): string
     {
-        // todo
+        return (new Types($data))->serialize($pretty);
     }
 
 }
