@@ -41,8 +41,8 @@ use JsonException;
  * @method static CData json_value_init_boolean(bool $bool) 初始化json_value布尔值
  * @method static CData json_value_init_null() 初始化json_value空值
  *
- * @method static string json_serialize_to_string_pretty(CData $jsonValue) 格式化输出json_value对象
- * @method static string json_serialize_to_string(CData $jsonValue) 输出json_value对象
+ * @method static CData json_serialize_to_string_pretty(CData $jsonValue) 格式化输出json_value对象
+ * @method static CData json_serialize_to_string(CData $jsonValue) 输出json_value对象
  *
  */
 class PJson

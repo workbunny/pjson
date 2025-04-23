@@ -73,12 +73,13 @@ class Types implements ArrayAccess, Iterator, Countable
             'double'    => PJson::json_value_init_number((float)$data),
             'boolean'   => PJson::json_value_init_boolean($data),
             'array'     => call_user_func(function () use ($data) {
+                // list
                 if (array_is_list($data)){
                     $jsonArray = Pjson::json_value_get_array($jsonValue = PJson::json_value_init_array());
                     foreach ($data as $value) {
                         Pjson::json_array_append_value($jsonArray, $this->p2c($value));
                     }
-                } else {
+                } else { // map
                     $jsonObject = Pjson::json_value_get_object($jsonValue = PJson::json_value_init_object());
                     foreach ($data as $key => $value) {
                         Pjson::json_object_set_value($jsonObject, (string)$key, $this->p2c($value));
@@ -87,6 +88,15 @@ class Types implements ArrayAccess, Iterator, Countable
                 return $jsonValue;
             }),
             'object'    => call_user_func(function () use ($data) {
+                // 可迭代对象
+                if (is_iterable($data)) {
+                    $jsonObject = Pjson::json_value_get_object($jsonValue = PJson::json_value_init_object());
+                    foreach ($data as $key => $value) {
+                        Pjson::json_object_set_value($jsonObject, (string)$key, $this->p2c($value));
+                    }
+                    return $jsonValue;
+                }
+                // 其他
                 return PJson::json_value_init_string("PHPData<object> {}");
             }),
             default     => PJson::json_value_init_string("PHPData<$type> {}"),
@@ -96,15 +106,24 @@ class Types implements ArrayAccess, Iterator, Countable
     /**
      * PHPData to CData
      *
-     * @param mixed $data
+     * @param CData $CData
+     * @param CType|null $CType
      * @return CData
      */
-    public function c2p(CData $data): mixed
+    public function c2p(CData $CData, ?CType $CType = null): mixed
     {
-        return match (FFI::typeof($data)->getKind()) {
-            CType::TYPE_CHAR,
-            CType::TYPE_POINTER => FFI::string($data),
-            default             => $data,
+        $CType = $CType ?: FFI::typeof($CData);
+        return match ($CType->getKind()) {
+            CType::TYPE_CHAR        => FFI::string($CData),
+            CType::TYPE_POINTER     => call_user_func(function () use ($CData, $CType) {
+                return $this->c2p($CData, $CType->getPointerType());
+            }),
+            CType::TYPE_ENUM        => $CType->getEnumKind(),
+            CType::TYPE_VOID        => null,
+            CType::TYPE_FUNC        => 'CData<function>{}',
+//            CType::TYPE_ARRAY,
+//            CType::TYPE_STRUCT, // todo
+            default                 => $CData
         };
     }
 
