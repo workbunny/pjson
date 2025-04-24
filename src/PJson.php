@@ -94,7 +94,7 @@ class PJson
      */
     public static function __callStatic(string $name, array $arguments)
     {
-        return call_user_func_array([static::ffi(), $name], $arguments);
+        return static::ffi()->$name(...$arguments);
     }
 
     /**
