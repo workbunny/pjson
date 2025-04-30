@@ -8,7 +8,7 @@
 - PHP 扩展 `ffi` 已启用
 - linux 系统
 - windows 系统
-- mac 系统(暂未开启)
+- mac 系统(自己执沙) 会报错
 
 ## 安装
 
@@ -36,22 +36,28 @@ var_dump($type);
 ```
 
 ```
-当前内存占用: 2.25MB
-执行耗时: 0.0042 秒
+当前内存：2.35MB
+【原生PHP JSON】 (迭代：1 次)
+总耗时：0.00311589 秒
+每次平均耗时：0.00311589 秒
+内存变化：32B
 ```
 
 pjson
 
 ```php
 // pjson解析
-$json = Json::parse_str($json_str);
-$type = Json::getStr($json, 'type');
-var_dump($type);
+$json = Json::parse($json_str);
+$type = Json::get($json, 'type');
+var_dump(Json::val($type));
 ```
 
 ```
-当前内存占用: 572.92KB
-执行耗时: 0.0137 秒
+当前内存：733.2KB
+【PJson JSON】 (迭代：1 次)
+总耗时：0.00883102 秒
+每次平均耗时：0.00883102 秒
+内存变化：114.81KB
 ```
 
 ## 编译json动态库
@@ -61,5 +67,5 @@ var_dump($type);
 `build` 文件夹
 
 ```bash
-gcc parson.c -shared -o Json.so -O2 -Wall -Wextra -std=c89 -pedantic-errors -DTESTS_MAIN 
+tcc -shared cJSON.c cJSON_Utils.c -o ../lib/Json.dll
 ```

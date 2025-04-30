@@ -5,263 +5,448 @@ declare(strict_types=1);
 
 namespace Workbunny\PJson;
 
+use \FFI\CData;
+use Workbunny\PJson\Type;
+
 class Json extends Base
 {
     /**
-     * 解析json字符串
+     * 当前版本号
      *
-     * @param string $json json字符串
-     * @return \FFI\CData json_val对象
-     */
-    public static function parse_str(string $json): \FFI\CData
-    {
-        $json_val = self::ffi()->json_parse_string($json);
-        if ($json_val == null) {
-            throw new \Exception("json parsing failed.");
-        }
-        return $json_val;
-    }
-
-    /**
-     * 解析json文件
-     *
-     * @param string $file json文件路径
-     * @return \FFI\CData json_val对象
-     */
-    public static function parse_file(string $file): \FFI\CData
-    {
-        $json_val = self::ffi()->json_parse_file_with_comments($file);
-        if ($json_val == null) {
-            throw new \Exception("json parsing failed.");
-        }
-        return $json_val;
-    }
-
-    /**
-     * 获取json中的字符串
-     *
-     * @param \FFI\CData $json_val json_val对象
-     * @param string $key 键名 支持多级键名，用.分隔
-     * @param string $grade_symbol 多级键名分隔符 默认. 如：a.b.c 表示 a 下的 b 下的 c
-     * @return string 字符串
-     */
-    public static function getStr(
-        \FFI\CData $json_val,
-        string $key,
-        string $grade_symbol = "."
-    ): string {
-        $explode = explode($grade_symbol, $key);
-        if ($key !== "") {
-            foreach ($explode as $k) {
-                $json_val = self::val($json_val, $k);
-            }
-        }
-        return Val::getStr($json_val);
-    }
-
-    /**
-     * 获取json中的数字
-     *
-     * @param \FFI\CData $json_val json_val对象
-     * @param string $key 键名 支持多级键名，用.分隔
-     * @param string $grade_symbol 多级键名分隔符 默认. 如：a.b.c 表示 a 下的 b 下的 c
-     * @return integer|float 数字
-     */
-    public static function getNum(
-        \FFI\CData $json_val,
-        string $key,
-        string $grade_symbol = "."
-    ): int|float {
-        $explode = explode($grade_symbol, $key);
-        if ($key !== "") {
-            foreach ($explode as $k) {
-                $json_val = self::val($json_val, $k);
-            }
-        }
-        return Val::getNum($json_val);
-    }
-
-    /**
-     * 获取json中的布尔值
-     * 支持多级键名，用.分隔
-     * 如：a.b.c 表示 a 下的 b 下的 c
-     *
-     * @param \FFI\CData $json_val json_val对象
-     * @param string $key 键名 支持多级键名，用.分隔
-     * @param string $grade_symbol 多级键名分隔符 默认. 如：a.b.c 表示 a 下的 b 下的 c
-     * @return boolean 布尔值
-     */
-    public static function getBool(
-        \FFI\CData $json_val,
-        string $key,
-        string $grade_symbol = "."
-    ): bool {
-        $explode = explode($grade_symbol, $key);
-        if ($key !== "") {
-            foreach ($explode as $k) {
-                $json_val = self::val($json_val, $k);
-            }
-        }
-        return Val::getBool($json_val);
-    }
-
-    /**
-     * 获取json中的json数组对象
-     * 支持多级键名，用.分隔
-     * 如：a.b.c 表示 a 下的 b 下的 c
-     *
-     * @param \FFI\CData $json_val json_val对象
-     * @param string $key 键名 支持多级键名，用.分隔
-     * @param string $grade_symbol 多级键名分隔符 默认. 如：a.b.c 表示 a 下的 b 下的 c
-     * @return \FFI\CData json_arr对象
-     */
-    public static function getArr(
-        \FFI\CData $json_val,
-        string $key,
-        string $grade_symbol = "."
-    ): \FFI\CData {
-        $explode = explode($grade_symbol, $key);
-        if ($key !== "") {
-            foreach ($explode as $k) {
-                $json_val = self::val($json_val, $k);
-            }
-        }
-        return Val::getArr($json_val);
-    }
-
-    /**
-     * 获取json中的json_Obj对象
-     * 支持多级键名，用.分隔
-     * 如：a.b.c 表示 a 下的 b 下的 c
-     *
-     * @param \FFI\CData $json_val json_val对象
-     * @param string $key 键名 支持多级键名，用.分隔
-     * @param string $grade_symbol 多级键名分隔符 默认. 如：a.b.c 表示 a 下的 b 下的 c
-     * @return \FFI\CData json_obj对象
-     */
-    public static function getObj(\FFI\CData $json_val, string $key, string $grade_symbol = "."): \FFI\CData
-    {
-        $explode = explode($grade_symbol, $key);
-        if ($key !== "") {
-            foreach ($explode as $k) {
-                $json_val = self::val($json_val, $k);
-            }
-        }
-        return Val::getObj($json_val);
-    }
-
-    /**
-     * 获取json_val中的json_val值
-     * 支持多级键名，用.分隔
-     * 如：a.b.c 表示 a 下的 b 下的 c
-     *
-     * @param \FFI\CData $json_val json_val对象
-     * @param string $key 键名 支持多级键名，用.分隔 如：a.b.c 表示 a 下的 b 下的 c
-     * @param string $grade_symbol 多级键名分隔符 默认. 
-     * @return \FFI\CData
-     */
-    public static function getVal(\FFI\CData $json_val, string $key, string $grade_symbol = "."): \FFI\CData
-    {
-        $explode = explode($grade_symbol, $key);
-        if ($key !== "") {
-            foreach ($explode as $k) {
-                $json_val = self::val($json_val, $k);
-            }
-        }
-        return $json_val;
-    }
-
-    /**
-     * 获取json_val中的值
-     *
-     * @param \FFI\CData $json_val json_val对象
-     * @param string|integer $key 键名
-     * @return \FFI\CData json_val对象
-     */
-    private static function val(\FFI\CData $json_val, string|int $key): \FFI\CData
-    {
-        if ($json_val[0]->type == Type::arr->value) {
-            $json_arr = self::ffi()->json_value_get_array($json_val);
-            return self::ffi()->json_array_get_value($json_arr, (int)$key);
-        } else if ($json_val[0]->type == Type::obj->value) {
-            $json_obj = self::ffi()->json_value_get_object($json_val);
-            return self::ffi()->json_object_get_value($json_obj, (string)$key);
-        } else {
-            return $json_val;
-        }
-    }
-
-    /**
-     * 获取json_val类型
-     *
-     * @param \FFI\CData $json_val
      * @return string
      */
-    public static function type(\FFI\CData $json_val): string
+    public static function version(): string
     {
-        return match ($json_val[0]->type) {
-            Type::null->value => "json_null",
-            Type::bool->value => "json_bool",
-            Type::num->value => "json_num",
-            Type::str->value => "json_str",
-            Type::arr->value => "json_arr",
-            Type::obj->value => "json_obj",
-            default => throw new \Exception("Not of json type"),
-        };
+        return "v0.0.1";
     }
 
     /**
-     * 序列化json对象为字符串
+     * 解析 JSON 字符串为 Json 对象
      *
-     * @param \FFI\CData $json_val json_val对象
-     * @return string 字符串
+     * @param string $json JSON 字符串
+     * @return CData JSON 对象
      */
-    public static function serialize(\FFI\CData $json_val): string
+    public static function parse(string $json): CData
     {
-        try {
-            return self::ffi()->json_serialize_to_string_pretty($json_val);
-        } catch (\FFI\Exception $e) {
-            throw new \FFI\Exception("It must be a json_val object.");
+        $jsonObj = self::ffi()->cJSON_Parse($json);
+        if ($jsonObj === null) {
+            throw new \Exception("JSON parse error: " . self::ffi()->cJSON_GetErrorPtr());
+        }
+        return $jsonObj;
+    }
+
+    /**
+     * 创建 JSON 对象
+     *
+     * @param mixed $root 内容
+     * @return CData JSON 对象
+     */
+    public static function create(mixed $root): CData
+    {
+        switch (gettype($root)) {
+            case "NULL":
+                return self::ffi()->cJSON_CreateNull();
+            case "boolean":
+                return self::ffi()->cJSON_CreateBool($root ? 1 : 0);
+            case "string":
+                return self::ffi()->cJSON_CreateString($root);
+            case "integer":
+                return self::ffi()->cJSON_CreateNumber((float)$root);
+            case "double":
+                return self::ffi()->cJSON_CreateNumber($root);
+            case "array":
+                if (count($root) === 0) {
+                    return self::ffi()->cJSON_CreateArray();
+                } else {
+                    $raw = json_encode($root, JSON_UNESCAPED_UNICODE);
+                    return self::ffi()->cJSON_CreateRaw($raw);
+                }
+            case "object":
+                if (empty(get_object_vars($root))) {
+                    return self::ffi()->cJSON_CreateObject();
+                } else {
+                    $raw = json_encode($root, JSON_UNESCAPED_UNICODE);
+                    return self::ffi()->cJSON_CreateRaw($raw);
+                }
+            default:
+                throw new \Exception("json type error: " . self::ffi()->cJSON_GetErrorPtr());
         }
     }
 
     /**
-     * json_val对象转php数组(如果数据过大会占用内存)
+     * 获取 JSON 对象的值
      *
-     * @param \FFI\CData $json_val json_val对象
-     * @return mixed php数组
+     * @param CData $jsonObj JSON 对象
+     * @param string|integer $key JSON 键、索引
+     * @return CData JSON 对象
      */
-    public static function toArray(\FFI\CData $json_val): mixed
+    public static function get(CData $jsonObj, string|int $key): CData
     {
-        $arr = [];
-        switch (self::type($json_val)) {
-            case "json_null":
-                $arr = null;
-                break;
-            case "json_bool":
-                $arr = Val::getBool($json_val);
-                break;
-            case "json_num":
-                $arr = Val::getNum($json_val);
-                break;
-            case "json_str":
-                $arr = Val::getStr($json_val);
-                break;
-            case "json_arr":
-                $json_arr = Val::getArr($json_val);
-                $let = Arr::getCount($json_arr);
-                for ($i = 0; $i < $let; $i++) {
-                    $arr[] = self::toArray(Arr::getVal($json_arr, $i));
-                }
-                break;
-            case "json_obj":
-                $json_obj = Val::getObj($json_val);
-                $let = Obj::getCount($json_obj);
-                for ($i = 0; $i < $let; $i++) {
-                    $arr[Obj::getKey($json_obj, $i)] = self::toArray(Obj::getVal($json_obj, Obj::getKey($json_obj, $i)));
-                }
-                break;
+        if (is_int($key)) {
+            return self::ffi()->cJSON_GetArrayItem($jsonObj, $key);
+        } else {
+            return self::ffi()->cJSON_GetObjectItem($jsonObj, $key);
         }
-        return $arr;
+    }
+
+    /**
+     * 深度获取 JSON 对象的值
+     *
+     * @param CData $jsonObj JSON 对象
+     * @param string $pointer 路径，必须以 / 开头 如：/abc/0/def
+     * @param boolean $caseSensitive 是否区分大小写 默认：true
+     * @return CData JSON 对象
+     */
+    public static function deepGet(CData $jsonObj, string $pointer, bool $caseSensitive = true): CData
+    {
+        if ($caseSensitive) {
+            return self::ffi()->cJSONUtils_GetPointerCaseSensitive($jsonObj, $pointer);
+        } else {
+            return self::ffi()->cJSONUtils_GetPointer($jsonObj, $pointer);
+        }
+    }
+    /**
+     * 设置 JSON 对象的值
+     *
+     * @param CData $jsonObj JSON 对象
+     * @param string|integer|CData $key JSON 键、索引或者JSON对象
+     * @param CData $item JSON 对象
+     * @return bool
+     */
+    public static function set(CData $jsonObj, string|int|CData $key, CData $item): bool
+    {
+        if (is_int($key)) {
+            $res = self::ffi()->cJSON_ReplaceItemInArray($jsonObj, $key, $item);
+        } elseif (is_string($key)) {
+            $res = self::ffi()->cJSON_ReplaceItemInObject($jsonObj, $key, $item);
+        } else {
+            $res = self::ffi()->cJSON_ReplaceItemViaPointer($jsonObj, $key, $item);
+        }
+        return $res ? true : false;
+    }
+
+    /**
+     * 深度设置 JSON 对象的值
+     *
+     * @param CData $jsonObj JSON 对象
+     * @param string $pointer 路径，必须以 / 开头 如：/abc/0/def
+     * @param CData $item JSON 对象
+     * @return bool
+     */
+    public static function deepSet(CData &$jsonObj, string $pointer, CData $item): bool
+    {
+        $copy = self::ffi()->cJSON_Duplicate($jsonObj, 1);
+        $newObj = self::ffi()->cJSON_CreateArray();
+        self::ffi()->cJSONUtils_AddPatchToArray($newObj, "replace", $pointer, $item);
+        $res = self::ffi()->cJSONUtils_ApplyPatchesCaseSensitive($copy, $newObj);
+        $jsonObj = $copy;
+        return $res == 0 ? true : false;
+    }
+
+    /**
+     * 添加 JSON 对象的值
+     *
+     * @param CData $jsonObj JSON 对象
+     * @param string|CData $strOrItem JSON 键或JSON对象
+     * @param CData|null $item JSON 对象
+     * @return boolean
+     */
+    public static function add(CData $jsonObj, string|CData $keyIntItem, ?CData $item = null): bool
+    {
+        if (is_string($keyIntItem)) {
+            $res = self::ffi()->cJSON_AddItemToObject($jsonObj, $keyIntItem, $item);
+        } else {
+            $res = self::ffi()->cJSON_AddItemToArray($jsonObj, $keyIntItem);
+        }
+        return $res ? true : false;
+    }
+
+    /**
+     * 深度添加 JSON 对象的值
+     *
+     * @param CData $jsonObj JSON 对象
+     * @param string $pointer 路径，必须以 / 开头 如：/abc/0/def
+     * @param CData $item JSON 对象
+     * @return boolean
+     */
+    public static function deepAdd(CData &$jsonObj, string $pointer, CData $item): bool
+    {
+        $copy = self::ffi()->cJSON_Duplicate($jsonObj, 1);
+        $newObj = self::ffi()->cJSON_CreateArray();
+        self::ffi()->cJSONUtils_AddPatchToArray($newObj, "add", $pointer, $item);
+        $res = self::ffi()->cJSONUtils_ApplyPatchesCaseSensitive($copy, $newObj);
+        $jsonObj = $copy;
+        return $res == 0 ? true : false;
+    }
+
+
+    /**
+     * 删除 JSON 对象的值
+     *
+     * @param CData $jsonObj JSON 对象
+     * @param string|integer|CData $item JSON 键、索引或 JSON 对象
+     * @return void 
+     */
+    public static function remove(CData $jsonObj, string|int|CData $item): void
+    {
+        if (is_int($item)) {
+            self::ffi()->cJSON_DeleteItemFromArray($jsonObj, $item);
+        } elseif (is_string($item)) {
+            self::ffi()->cJSON_DeleteItemFromObject($jsonObj, $item);
+        } else {
+            self::ffi()->cJSON_DetachItemViaPointer($jsonObj, $item);
+            self::ffi()->cJSON_Delete($res);
+        }
+    }
+
+    /**
+     * 深度删除 JSON 对象的值
+     *
+     * @param CData $jsonObj JSON 对象
+     * @param string $pointer 路径，必须以 / 开头 如：/abc/0/def
+     * @return void
+     */
+    public static function deepRemove(CData &$jsonObj, string $pointer): void
+    {
+        $copy = self::ffi()->cJSON_Duplicate($jsonObj, 1);
+        $newObj = self::ffi()->cJSON_CreateArray();
+        self::ffi()->cJSONUtils_AddPatchToArray($newObj, "remove", $pointer, null);
+        $res = self::ffi()->cJSONUtils_ApplyPatchesCaseSensitive($copy, $newObj);
+        $jsonObj = $copy;
+        if ($res != 0) {
+            throw new \Exception("JSON remove error: " . self::ffi()->cJSON_GetErrorPtr());
+        }
+    }
+
+    /**
+     * 复制 JSON 对象
+     *
+     * @param CData $jsonObj JSON 对象
+     * @param boolean $deep 是否深度复制
+     * @return CData 新的 JSON 对象
+     */
+    public static function copy(CData $jsonObj, bool $deep = true): CData
+    {
+        return self::ffi()->cJSON_Duplicate($jsonObj, $deep ? 1 : 0);
+    }
+
+    /**
+     * 合并两个 JSON 对象
+     *
+     * @param CData $jsonObj1 第一个 JSON 对象
+     * @param CData $jsonObj2 第二个 JSON 对象
+     * @param boolean $caseSensitive 是否区分大小写 默认：true
+     * @return CData 合并后的 JSON 对象
+     */
+    public static function merge(CData $jsonObj1, CData $jsonObj2, bool $caseSensitive = true): CData
+    {
+        if ($caseSensitive) {
+            return self::ffi()->cJSONUtils_MergePatchCaseSensitive($jsonObj1, $jsonObj2);
+        } else {
+            return self::ffi()->cJSONUtils_MergePatch($jsonObj1, $jsonObj2);
+        }
+    }
+
+    /**
+     * 比较两个 JSON 对象是否相等
+     *
+     * @param CData $jsonObj1 第一个 JSON 对象
+     * @param CData $jsonObj2 第二个 JSON 对象
+     * @param boolean $caseSensitive 是否区分大小写 默认：false
+     * @return boolean
+     */
+    public static function compare(
+        CData $jsonObj1,
+        CData $jsonObj2,
+        bool $caseSensitive = false
+    ): bool {
+        return self::ffi()->cJSON_Compare($jsonObj1, $jsonObj2, $caseSensitive ? 1 : 0) ? true : false;
+    }
+
+    /**
+     * 检查 JSON 对象是否包含指定键
+     *
+     * @param CData $jsonObj JSON 对象
+     * @param string $key JSON 键
+     * @return boolean 
+     */
+    public static function hasKey(CData $jsonObj, string $key): bool
+    {
+        return self::ffi()->cJSON_HasObjectItem($jsonObj, $key) ? true : false;
+    }
+
+    /**
+     * JSON 对象转PHP类型
+     *
+     * @param CData $jsonObj JSON 对象
+     * @return mixed
+     */
+    public static function val(CData $jsonObj): mixed
+    {
+        switch ($jsonObj->type) {
+            case Type::FALSE->value:
+                return false;
+            case Type::TRUE->value:
+                return true;
+            case Type::BOOL->value:
+                return $jsonObj->valueint ? true : false;
+            case Type::NULL->value:
+                return null;
+            case Type::NUMBER->value:
+                return $jsonObj->valuedouble;
+            case Type::STRING->value:
+                return $jsonObj->valuestring;
+            default:
+                throw new \Exception("json type error: Only numbers, strings, null and Boolean types are supported.");
+        }
+    }
+
+    /**
+     * 获取 JSON 对象的长度
+     *
+     * @param CData $jsonObj JSON 对象
+     * @return integer 长度
+     */
+    public static function count(CData $jsonObj): int
+    {
+        return self::ffi()->cJSON_GetArraySize($jsonObj);
+    }
+
+    /**
+     * 检查 JSON 对象的类型
+     *
+     * @param CData $jsonObj JSON 对象
+     * @return string 类型
+     */
+    public static function check(CData $jsonObj): string
+    {
+        switch ($jsonObj->type) {
+            case Type::INVALID->value:
+                return Type::INVALID->name;
+            case Type::FALSE->value:
+                return Type::FALSE->name;
+            case Type::TRUE->value:
+                return Type::TRUE->name;
+            case Type::BOOL->value:
+                return Type::BOOL->name;
+            case Type::NULL->value:
+                return Type::NULL->name;
+            case Type::NUMBER->value:
+                return Type::NUMBER->name;
+            case Type::STRING->value:
+                return Type::STRING->name;
+            case Type::ARRAY->value:
+                return Type::ARRAY->name;
+            case Type::OBJECT->value:
+                return Type::OBJECT->name;
+            case Type::RAW->value:
+                return Type::RAW->name;
+            default:
+                throw new \Exception("json type error: " . self::ffi()->cJSON_GetErrorPtr());
+        }
+    }
+
+    /**
+     * 补丁
+     *
+     * @param CData $from JSON 对象
+     * @param CData $to JSON 对象
+     * @param boolean $caseSensitive 是否区分大小写 默认：true
+     * @return CData 补丁JSON对象
+     */
+    public static function patches(CData $from, CData $to, bool $caseSensitive = true): CData
+    {
+        if ($caseSensitive) {
+            return self::ffi()->cJSONUtils_GeneratePatchesCaseSensitive($from, $to);
+        } else {
+            return self::ffi()->cJSONUtils_GeneratePatches($from, $to);
+        }
+    }
+
+    /**
+     * 合并补丁
+     *
+     * @param CData $jsonObj JSON 对象
+     * @param CData $patches 补丁对象
+     * @param boolean $caseSensitive 是否区分大小写 默认：true
+     * @return CData 合并后的 JSON 对象
+     */
+    public static function mergePatches(CData $jsonObj, CData $patches, $caseSensitive = true): CData
+    {
+        if ($caseSensitive) {
+            return self::ffi()->cJSONUtils_GenerateMergePatchCaseSensitive($jsonObj, $patches);
+        } else {
+            return self::ffi()->cJSONUtils_GenerateMergePatch($jsonObj, $patches);
+        }
+    }
+
+    /**
+     * 获取 JSON 对象的路径
+     *
+     * @param CData $jsonObj JSON 对象
+     * @param CData $item JSON 对象
+     * @return string 路径
+     */
+    public static function pointerPath(CData $jsonObj, CData $item): string
+    {
+        return self::ffi()->cJSONUtils_FindPointerFromObjectTo($jsonObj, $item);
+    }
+
+    /**
+     * 排序 JSON 对象
+     *
+     * @param CData $jsonObj JSON 对象
+     * @param boolean $caseSensitive 是否区分大小写 默认：true
+     * @return void
+     */
+    public static function sort(CData $jsonObj, bool $caseSensitive = true): void
+    {
+        if ($caseSensitive) {
+            self::ffi()->cJSONUtils_SortObjectCaseSensitive($jsonObj);
+        } else {
+            self::ffi()->cJSONUtils_SortObject($jsonObj);
+        }
+    }
+
+    /**
+     * 删除 JSON 对象
+     *
+     * @param CData $jsonObj JSON 对象
+     * @return void
+     */
+    public static function delete(CData $jsonObj): void
+    {
+        self::ffi()->cJSON_Delete($jsonObj);
+    }
+
+    /**
+     * 压缩 JSON 字符串
+     *
+     * @param string $jsonStr JSON 字符串
+     * @return void
+     */
+    public static function minify(string $jsonStr): void
+    {
+        self::ffi()->cJSON_Minify($jsonStr);
+    }
+
+    /**
+     * 将 JSON 对象转换为 JSON 字符串
+     *
+     * @param CData $jsonObj JSON 对象
+     * @param boolean $isFormat 是否格式化输出 默认为 true
+     * @return string
+     */
+    public static function print(CData $jsonObj, bool $isFormat = true): string
+    {
+        if ($isFormat) {
+            $res = self::ffi()->cJSON_Print($jsonObj);
+        } else {
+            $res = self::ffi()->cJSON_PrintUnformatted($jsonObj);
+        }
+        if ($res === null) {
+            throw new \Exception("JSON print error: The erroneous JSON object has been deleted.");
+        }
+        return $res;
     }
 }

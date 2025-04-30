@@ -20,20 +20,17 @@ abstract class Base
 
     private static function getLibFile(): string
     {
-        $suffix = ".dll";
-        // 判断系统
-        switch (PHP_OS) {
-            case 'Linux':
-                $suffix = ".so";
-                break;
-            case 'Darwin':
-                $suffix = ".dylib";
-                break;
-            default:
-                break;
+        static $libFile = null;
+        if ($libFile !== null) {
+            return $libFile;
         }
-        return dirname(__DIR__)
-            . DIRECTORY_SEPARATOR . "lib"
-            . DIRECTORY_SEPARATOR . "Json" . $suffix;
+
+        $suffix = [
+            'Linux' => '.so',
+            'Darwin' => '.dylib',
+        ][PHP_OS] ?? '.dll';
+
+        $libFile = dirname(__DIR__) . '/lib/Json' . $suffix;
+        return $libFile;
     }
 }

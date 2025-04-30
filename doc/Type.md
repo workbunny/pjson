@@ -1,10 +1,6 @@
-<?php
+### 枚举类型
 
-// 严格模式
-declare(strict_types=1);
-
-namespace Workbunny\PJson;
-
+```php
 /**
  * JSON 数据类型
  *
@@ -34,3 +30,4 @@ enum Type: int
     case OBJECT = 64; // 对象
     case RAW = 128; // 原始数据
 }
+```

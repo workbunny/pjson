@@ -8,4 +8,4 @@ else
 suffix=".so"
 fi
 
-gcc parson.c -shared -o Json$suffix -O2 -Wall -Wextra -std=c89 -pedantic-errors -DTESTS_MAIN 
+gcc cJSON.c cJSON_Utils.c -shared -o Json$suffix -O2 -Wall -Wextra -std=c89 -pedantic-errors -DTESTS_MAIN 
