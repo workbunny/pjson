@@ -8,12 +8,11 @@
 - PHP 扩展 `ffi` 已启用
 - linux 系统
 - windows 系统
-- mac 系统(自己执沙) 会报错
+- mac 系统(自己执沙) 
 
 ## 安装
 
 ```bash
-# 暂未开启
 composer require workbunny/pjson
 ```
 
